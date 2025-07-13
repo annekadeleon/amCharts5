@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>amCharts 5 Map with Markers</title>
+  <!-- amCharts core -->
+  <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+  <!-- amCharts map charts -->
+  <script src="https://cdn.amcharts.com/lib/5/map.js"></script>
+  <!-- World geodata -->
+  <script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
+  <!-- Theme -->
+  <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    #chartdiv {
+      width: 100%;
+      height: 100vh;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="chartdiv"></div>
+  <script>
+  window.onload = function () {
+    const pointerImg = "https://cdn.prod.website-files.com/6666c47f01c641f105a61592/6683b6b54b78e2ffcb380f88_Map-pin.svg"
+    const pointerWidth = 37
+    const pointerHeight = 46
+  	const defaultCountryColor = am5.color(0xf5f6f9); // light gray
+  	const highlightedCountryColor = am5.color(0x1b1b6d); // dark blue
+  	const hoverColor = am5.color(0xBEBEEF); // pastel purple
+    const highlightedCountries = [
+      { id: "AR", coordinates: [-63.6167, -30] }, // Argentina
+      { id: "AU", coordinates: [133.7751, -23] }, // Australia
+      { id: "KH", coordinates: [106, 14] }, // Cambodia
+      { id: "CI", title: "Ivory Coast", coordinates: [-5.5471, 15] }, // add English title to override French
+      { id: "EG", coordinates: [30.8025, 30] }, // Egypt
+      { id: "IN", coordinates: [78.9629, 25] }, // India
+      { id: "ID", coordinates: [120, -1] }, // Indonesia
+      { id: "JP", coordinates: [141, 43] }, // Japan
+      { id: "MY", coordinates: [115, 5] }, // Malaysia
+      { id: "NG", coordinates: [8.6753, 15] }, // Nigeria
+      { id: "PH", coordinates: [121.774, 19] }, // Philippines
+      { id: "TH", coordinates: [90, 15.8700] }, // Thailand
+      { id: "VN", coordinates: [105, 23] }, // Vietnam
+    // Add more here...
+    ];
+
+    var root = am5.Root.new("chartdiv");
+    root.setThemes([ am5themes_Animated.new(root) ]);
+
+    var chart = root.container.children.push(am5map.MapChart.new(root, {
+      panX: "translateX",
+      panY: "translateY",
+      projection: am5map.geoMercator()
+    }));
+
+    var polygonSeries = chart.series.push(am5map.MapPolygonSeries.new(root, {
+      geoJSON: am5geodata_worldLow,
+      exclude: ["AQ"],
+      idField: "id",
+      polygonSettingsField: "polygonSettings" 
+    }));
+
+    var pointSeries = chart.series.push(am5map.MapPointSeries.new(root, {
+      geometryField: "geometry"
+    }));
+
+    polygonSeries.set("fillField", "fill");
+
+    polygonSeries.mapPolygons.template.setAll({
+      // tooltipText: "{name}", // do not display "inactive" countries
+      interactive: true,
+      fill: defaultCountryColor,
+      stroke: highlightedCountryColor // remove this later
+    });
+
+    // map pointer/
+    /**
+    pointSeries.bullets.push(function(dataItem) {
+      return am5.Bullet.new(root, {
+        sprite: am5.Picture.new(root, {
+          width: pointerWidth,
+          height: pointerHeight,
+          centerX: am5.p50,
+          centerY: am5.p50,
+          src: pointerImg
+        })
+      });
+    });
+    **/
+
+    chart.set("zoomControl", am5map.ZoomControl.new(root, {}));
+
+    polygonSeries.mapPolygons.template.events.on("click", function(ev) {
+      var dataItem = ev.target.dataItem;
+      if (dataItem) {
+        polygonSeries.zoomToDataItem(dataItem);
+      }
+    });
+
+    const customTooltip = am5.Tooltip.new(root, {
+      getFillFromSprite: false, // stops fill color from inheriting polygon's fill
+      //labelText: "{name}", // fallback if HTML not set
+      labelHTML: "<div style='color: black; font-weight: bold;'>{name}</div>",
+      background: am5.RoundedRectangle.new(root, {
+        fill: am5.color(0xffffff), // white background
+        fillOpacity: 1,
+        stroke: am5.color(0x000000), // optional: black border
+        cornerRadiusTL: 4,
+        cornerRadiusTR: 4,
+        cornerRadiusBL: 4,
+        cornerRadiusBR: 4
+      })
+    });
+
+    // "active" countries
+    polygonSeries.events.on("datavalidated", function () {
+      highlightedCountries.forEach(({ id, title, coordinates }) => {
+        const country = polygonSeries.getDataItemById(id);
+        if (country) {
+          const countryName = title || country.dataContext.name;
+          country.dataContext.name = countryName;
+
+          const polygon = country.get("mapPolygon");
+
+          polygon.setAll({
+            fill: highlightedCountryColor,
+            tooltipText: countryName, // use default title if not provided
+          });
+
+          // change color on hover
+          polygon.states.create("hover", {
+            fill: hoverColor
+          });
+
+          pointSeries.data.push({
+            id: id,
+            geometry: { type: "Point", coordinates: coordinates },
+            name: countryName, // always provide a title for the pointer
+          });
+        }
+      });
+      pointSeries.data.setAll(pointSeries.data.values);
+      polygonSeries.mapPolygons.template.set("tooltip", customTooltip);
+
+    }); // end of "active" countries
+
+
+      // map pointer
+      pointSeries.bullets.push(function(dataItem) {
+        const sprite = am5.Picture.new(root, {
+          width: pointerWidth,
+          height: pointerHeight,
+          centerX: am5.p50,
+          centerY: am5.p50,
+          src: pointerImg,
+          tooltip: customTooltip,
+          tooltipText: "{name}", // from name: countryName
+        });
+      return am5.Bullet.new(root, {
+        sprite: sprite
+      });
+    }); // end of map pointer
+
+
+
+
+  }; // end of globalMap()
+  </script>
+</body>
+</html>
