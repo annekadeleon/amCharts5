@@ -11,44 +11,195 @@
   <script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
   <!-- Theme -->
   <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+
   <style>
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
     }
+    a {
+      text-decoration: none;
+      cursor: pointer;
+      pointer-events: auto;
+    }
     #chartdiv {
       width: 100%;
-      height: 100vh;
+      max-width: 1328px;
+      height: 80vh;
+      max-height: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .mapPopup{
+      align-items:center;
+      gap:6px;
+      width: 200px;
+      font-family: Antarcticabeta, sans-serif;
+      letter-spacing: 0;
+      z-index: 99;
+      width: 100%;
+      height: 100%;
+    }
+    .mapPopup h5 {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #37b846;
+      padding-bottom: 0.75rem;
+    }
+    .mapPopup p {
+      font-size: 12px;
+      line-height: 130%;
+      white-space: normal;
+      color: black;
+      max-width: 190px;
+      margin-top: 0.75rem;
+    }
+    .mapPopup img {
+      width: 190px;
+      height:auto;
+    }
+    /* mobile landscape */
+    @media screen and (max-width: 767px) {
+      #chartdiv {
+        height: 70vh;
+      }
+      .mapPopup{
+        width: 170px;
+        font-size: smaller;
+      }
+      .mapPopup p {
+        max-width: none;
+      }
+      .mapPopup img {
+        width: 150px;
+      }
+    }
+    /* mobile portrait */
+    @media screen and (max-width: 478px) {
+      #chartdiv {
+        height: 50vh;
+      }
     }
   </style>
 </head>
 
 <body>
+
   <div id="chartdiv"></div>
   <script>
   window.onload = function () {
     const pointerImg = "https://cdn.prod.website-files.com/6666c47f01c641f105a61592/6683b6b54b78e2ffcb380f88_Map-pin.svg"
     const pointerWidth = 37
     const pointerHeight = 46
-  	const defaultCountryColor = am5.color(0xf5f6f9); // light gray
-  	const highlightedCountryColor = am5.color(0x1b1b6d); // dark blue
-  	const hoverColor = am5.color(0xBEBEEF); // pastel purple
+    const defaultCountryColor = am5.color(0xf5f6f9); // light gray
+    const highlightedCountryColor = am5.color(0x1b1b6d); // dark blue
+    const hoverColor = am5.color(0xBEBEEF); // pastel purple
     const highlightedCountries = [
-      { id: "AR", coordinates: [-63.6167, -30] }, // Argentina
-      { id: "AU", coordinates: [133.7751, -23] }, // Australia
-      { id: "KH", coordinates: [106, 14] }, // Cambodia
-      { id: "CI", title: "Ivory Coast", coordinates: [-5.5471, 15] }, // add English title to override French
-      { id: "EG", coordinates: [30.8025, 30] }, // Egypt
-      { id: "IN", coordinates: [78.9629, 25] }, // India
-      { id: "ID", coordinates: [120, -1] }, // Indonesia
-      { id: "JP", coordinates: [141, 43] }, // Japan
-      { id: "MY", coordinates: [115, 5] }, // Malaysia
-      { id: "NG", coordinates: [8.6753, 15] }, // Nigeria
-      { id: "PH", coordinates: [121.774, 19] }, // Philippines
-      { id: "TH", coordinates: [90, 15.8700] }, // Thailand
-      { id: "VN", coordinates: [105, 23] }, // Vietnam
-    // Add more here...
+      { // Argentina
+        id: "AR",
+        coordinates: [-63.6167, -30],
+        img: 'https://cdn.prod.website-files.com/66682421bb48ee1a8da53bb7/668e3562368decd80f9020c8_Argentina_%20Upcycling%20Ocean%20Bound%20Plastic%20in%20Patagonia.jpg',
+        desc: 'Upcycling Ocean Bound Plastic in Patagonia',
+        url: 'https://marketplace.pcxmarkets.com/products/upcycling-ocean-bound-plastic-in-patagonia-1?_pos=1&_fid=2a07784ab&_ss=c',
+      },
+      { // Australia
+        id: "AU",
+        coordinates: [133.7751, -23],
+        img: 'https://cdn.prod.website-files.com/66682421bb48ee1a8da53bb7/67160733c5a88b2100994067_Picture2.webp',
+        desc: 'Collection of Polyethylene Farm Plastics in Far North Queensland',
+        url: 'https://marketplace.pcxmarkets.com/products/far-north-queensland-and-farm-plastics-project?_pos=1&_fid=2bde24e1c&_ss=c',
+      },
+      { // Bangladesh
+        id: "BD",
+        coordinates: [90, 25],
+        img: 'https://cdn.prod.website-files.com/66682421bb48ee1a8da53bb7/6886d8ce5ce5b5ccb78b38f5_bangladesh_project.jpg',
+        desc: 'Community Collection and Upcycling of Mixed Plastics in Sylhet & Dhaka',
+        url: 'https://marketplace.pcxmarkets.com/products/community-collection-and-upcycling-of-mixed-plastics-in-sylhet-dhaka-bangladesh-pprs?_pos=1&_fid=11cb6fe6d&_ss=c',
+      },
+      { // Brazil
+        id: "BR",
+        coordinates: [-50, -5],
+        img: 'https://cdn.prod.website-files.com/66682421bb48ee1a8da53bb7/6886e52a7418f1dd3e54da7b_brazil_project.jpg',
+        desc: 'Recycling of PP, PS, LDPE and PVC plastics in Guarulhos',
+        url: 'https://marketplace.pcxmarkets.com/products/recycling-of-pp-ps-ldpe-and-pvc-plastics-in-guarulhos-sp-brazil-pwrs?_pos=1&_fid=9eb0eb3f6&_ss=c',
+      }, 
+      { // Cambodia
+        id: "KH",
+        coordinates: [106, 14],
+        img: 'https://cdn.prod.website-files.com/66682421bb48ee1a8da53bb7/686389c62c2cfa3f6f420dba_cambodia_project.jpg',
+        desc: 'Community-based Collection and Upcycling of Non-Recyclable Ocean-Bound Plastics in Sihanoukville',
+        url: 'https://marketplace.pcxmarkets.com/products/community-based-approach-for-collecting-and-upcycling-mismanaged-non-recyclable-ocean-bound-plastic-in-sihanoukville-cambodia?_pos=1&_fid=f4fa14291&_ss=c',
+      }, 
+      { title: "Ivory Coast", // add English title to override French
+        id: "CI",
+        coordinates: [-5.5471, 8],
+        img: 'https://cdn.prod.website-files.com/66682421bb48ee1a8da53bb7/6716081d210bdc9cfba774ee_Conceptos5.webp',
+        desc: 'Community Collection and Upcycling of HDPE and Flexible Plastics in Abidjan and Grand Bassam',
+        url: 'https://marketplace.pcxmarkets.com/products/waste-collection-credits-community-collection-and-upcycling?_pos=1&_fid=e5b458a07&_ss=c',
+      }, 
+      { // Egypt
+        id: "EG",
+        coordinates: [30.8025, 30],
+        img: 'https://cdn.prod.website-files.com/66682421bb48ee1a8da53bb7/6715ae6e44492a4081a06c6c_Asyut.webp',
+        desc: 'Nile River Collection of PET and Non-PET in Cairo',
+        url: 'https://marketplace.pcxmarkets.com/products/very-nile-collection-of-pet-and-non-pet-in-mena-region-egypt?_pos=1&_fid=94fdbd8d2&_ss=c',
+      },
+      { // India
+        id: "IN",
+        coordinates: [78.9629, 25],
+        img: 'https://cdn.prod.website-files.com/66682421bb48ee1a8da53bb7/668e32c865f63c83ad2f5a29_India_Recycling%20in%20New%20Delhi.jpg',
+        desc: 'Recycling in New Delhi',
+        url: 'https://marketplace.pcxmarkets.com/products/recycling-in-new-delhi?_pos=1&_fid=66802338a&_ss=c',
+      },
+      { // Indonesia
+        id: "ID",
+        coordinates: [120, -1],
+        img: 'https://cdn.prod.website-files.com/66682421bb48ee1a8da53bb7/668d277a5898234f972021b0_Indonesia_Community%20Collection%20and%20PET%20Recycling%20in%20Indonesia.jpg',
+        desc: 'Community Collection and PET Recycling in Indonesia',
+        url: 'https://marketplace.pcxmarkets.com/products/community-collection-and-pet-recycling-in-indonesia?_pos=1&_fid=3272fa089&_ss=c',
+      },
+      { // Malaysia
+        id: "MY",
+        coordinates: [113, 3],
+        img: 'https://cdn.prod.website-files.com/66682421bb48ee1a8da53bb7/671604e5ff1f690e124e2899_IMG_2179_a3f96584-a539-4198-be00-4346824198a1.webp',
+        desc: 'Ocean-Bound Community Collection and Pyrolysis Process of Mixed Plastic Waste in Johor',
+        url: 'https://marketplace.pcxmarkets.com/products/ocean-bound-plastic-of-mixed-plastic-waste-and-pyrolysis-process-in-johor-malaysia?_pos=1&_fid=7cfe8ec0d&_ss=c',
+      },
+      { // Nigeria
+        id: "NG",
+        coordinates: [8.6753, 10],
+        img: 'https://cdn.prod.website-files.com/66682421bb48ee1a8da53bb7/668e36af37258fb8609fdf43_Map_Nigeria_Ocean%2C%20Land%20%26%20Community-Based%20Plastic%20Waste%20Collection%20and%20Recycling.jpg',
+        desc: 'Ocean, Land & Community-Based Plastic Waste Collection and Recycling',
+        url: 'https://marketplace.pcxmarkets.com/products/revolutionizing-nigeria-for-a-sustainable-future-ocean-land-community-based-plastic-waste-collection-and-recycling',
+      },
+      { // Philippines
+        id: "PH",
+        coordinates: [121.5, 18],
+        img: 'https://cdn.prod.website-files.com/66682421bb48ee1a8da53bb7/668d263dabc084cdb70e0531_Philippines_Ocean%20Bound%2C%20Community%20Collection%20and%20Upcycling.jpg',
+        desc: 'Ocean Bound, Community Collection and Upcycling',
+        url: 'https://marketplace.pcxmarkets.com/products/aling-tindera-ocean-bound-community-collection-and-upcycling?_pos=12&_fid=5e45e970e&_ss=c',
+      },
+      { // Thailand
+        id: "TH",
+        coordinates: [100, 18],
+        img: 'https://cdn.prod.website-files.com/66682421bb48ee1a8da53bb7/668e30f9c9ea5381d3d9223b_Thailand_Community%20Collection%20of%20PET%20and%20HDPE%20in%20Thailan.jpg',
+        desc: 'Ocean and Island Community Collection of PET and HDPE in Thailand',
+        url: 'https://marketplace.pcxmarkets.com/products/ocean-and-island-community-collection-of-pet-and-hdpe-in-thailand?_pos=1&_fid=491c38a42&_ss=c',
+      },
+      { // Vietnam
+        id: "VN",
+        coordinates: [105, 22.5],
+        img: 'https://cdn.prod.website-files.com/66682421bb48ee1a8da53bb7/668e306de0b61bcdcab5fc34_Vietnam%20Collecting%20Ocean%20bound%20plastic.jpg',
+        desc: 'Collecting Ocean Bound Plastic',
+        url: 'https://marketplace.pcxmarkets.com/products/collecting-ocean-bound-plastic?_pos=1&_fid=d0c4a6299&_ss=c',
+      }
+      // { // Sri Lanka
+      //   id: "LK",
+      //   coordinates: [80.6, 7.6],
+      //   img: '',
+      // },
+      // Add more using ISO alpha-2 country codes for ID
     ];
 
     var root = am5.Root.new("chartdiv");
@@ -74,54 +225,57 @@
     polygonSeries.set("fillField", "fill");
 
     polygonSeries.mapPolygons.template.setAll({
-      // tooltipText: "{name}", // do not display "inactive" countries
       interactive: true,
       fill: defaultCountryColor,
-      stroke: highlightedCountryColor // remove this later
+      stroke: highlightedCountryColor // feel free to remove this
     });
-
-    // map pointer/
-    /**
-    pointSeries.bullets.push(function(dataItem) {
-      return am5.Bullet.new(root, {
-        sprite: am5.Picture.new(root, {
-          width: pointerWidth,
-          height: pointerHeight,
-          centerX: am5.p50,
-          centerY: am5.p50,
-          src: pointerImg
-        })
-      });
-    });
-    **/
 
     chart.set("zoomControl", am5map.ZoomControl.new(root, {}));
 
+    // when a country is clicked
     polygonSeries.mapPolygons.template.events.on("click", function(ev) {
       var dataItem = ev.target.dataItem;
       if (dataItem) {
-        polygonSeries.zoomToDataItem(dataItem);
+        const id = dataItem.dataContext.id;
+        const isActive = highlightedCountries.some(c => c.id === id);
+
+        // zoom into country if it's active
+        if (isActive) {
+          polygonSeries.zoomToDataItem(dataItem);    
+        } 
       }
     });
 
+    // popup on hover
     const customTooltip = am5.Tooltip.new(root, {
       getFillFromSprite: false, // stops fill color from inheriting polygon's fill
-      //labelText: "{name}", // fallback if HTML not set
-      labelHTML: "<div style='color: black; font-weight: bold;'>{name}</div>",
+      labelHTML: `
+      <a href="{projectLink}" target='_blank'>
+        <div class='mapPopup'>
+          <div><h5>{name}</h5></div>
+          <img src='{projectImg}'/>
+          <div><p>{projectDesc}</p></div>
+        </div>
+      </a>
+      `,
+      keepTargetHover: true, // keep tooltip open when hovered
+      interactive: true,     // allow clicks inside
       background: am5.RoundedRectangle.new(root, {
         fill: am5.color(0xffffff), // white background
         fillOpacity: 1,
-        stroke: am5.color(0x000000), // optional: black border
-        cornerRadiusTL: 4,
-        cornerRadiusTR: 4,
-        cornerRadiusBL: 4,
-        cornerRadiusBR: 4
+        //stroke: am5.color(0x000000), // optional: black border
+        cornerRadius: 4,
+        shadowColor: am5.color(0x000000),
+        shadowOpacity: 0.3,
+        shadowBlur: 5,
+        shadowOffsetX: 0,
+        shadowOffsetY: 2
       })
     });
 
-    // "active" countries
+    // active countries
     polygonSeries.events.on("datavalidated", function () {
-      highlightedCountries.forEach(({ id, title, coordinates }) => {
+      highlightedCountries.forEach(({ id, title, coordinates, img, desc, url }) => {
         const country = polygonSeries.getDataItemById(id);
         if (country) {
           const countryName = title || country.dataContext.name;
@@ -129,47 +283,99 @@
 
           const polygon = country.get("mapPolygon");
 
+          country.dataContext.projectImg = img;
+          country.dataContext.projectDesc = desc;
+          country.dataContext.projectLink = url;
+
+          // country borders
           polygon.setAll({
             fill: highlightedCountryColor,
-            tooltipText: countryName, // use default title if not provided
+            //tooltipText: countryName, // use default title if not provided
+            //projectImg: img
           });
 
           // change color on hover
           polygon.states.create("hover", {
-            fill: hoverColor
+            //fill: hoverColor
           });
 
           pointSeries.data.push({
             id: id,
             geometry: { type: "Point", coordinates: coordinates },
             name: countryName, // always provide a title for the pointer
+            projectImg: img,
+            projectDesc: desc,
+            projectLink: url
           });
         }
       });
       pointSeries.data.setAll(pointSeries.data.values);
-      polygonSeries.mapPolygons.template.set("tooltip", customTooltip);
+      // show card when hovering within country borders
+      //polygonSeries.mapPolygons.template.set("tooltip", customTooltip);
 
-    }); // end of "active" countries
+    }); // end of active countries
 
-
-      // map pointer
-      pointSeries.bullets.push(function(dataItem) {
-        const sprite = am5.Picture.new(root, {
-          width: pointerWidth,
-          height: pointerHeight,
-          centerX: am5.p50,
-          centerY: am5.p50,
-          src: pointerImg,
-          tooltip: customTooltip,
-          tooltipText: "{name}", // from name: countryName
-        });
+    // map pointer
+    pointSeries.bullets.push(function(dataItem) {
+      const sprite = am5.Picture.new(root, {
+        width: pointerWidth,
+        height: pointerHeight,
+        centerX: am5.p50,
+        centerY: am5.p50,
+        src: pointerImg,
+        tooltip: customTooltip,
+        tooltipText: "{name}", // from name: countryName
+      });
       return am5.Bullet.new(root, {
         sprite: sprite
       });
     }); // end of map pointer
 
+    // auto zoom to active countries on load
+    polygonSeries.events.on("datavalidated", function () {
+      let items = highlightedCountries.map(c => polygonSeries.getDataItemById(c.id));
+      // zoom to bounding box of active countries
+      polygonSeries.zoomToDataItems(items);
+    }); // end of auto zoom
 
+    // reusable style for zoom buttons
+    let zoomControl = am5map.ZoomControl.new(root, {});
+    chart.set("zoomControl", zoomControl);
 
+    // style for zoom buttons
+    function styleZoomButton(button) {
+      // Default style
+      button.get("background").setAll({
+        fill: am5.color(0x1b1b6d),   // dark blue background
+        stroke: am5.color(0xffffff), // white border
+        cornerRadius: 8
+      });
+      
+      // plus/minus icon color
+      button.get("icon").setAll({
+        fill: am5.color(0xffffff) // white
+      });
+
+      // hover state
+      button.get("background").states.create("hover", {
+        fill: am5.color(0xBEBEEF) // pastel purple
+      });
+      button.get("icon").states.create("hover", {
+        fill: am5.color(0x333366) // darker blue
+      });
+
+      // clicked/active state
+      button.get("background").states.create("down", {
+        fill: am5.color(0x333366) // darker blue
+      });
+      button.get("icon").states.create("down", {
+        fill: am5.color(0xffffff) // white
+      });
+    } // end of zoom button styles
+
+    // apply style to both buttons
+    styleZoomButton(zoomControl.plusButton);
+    styleZoomButton(zoomControl.minusButton);
 
   }; // end of globalMap()
   </script>
